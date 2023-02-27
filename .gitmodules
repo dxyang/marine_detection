@@ -1,3 +1,6 @@
 [submodule "yolov5"]
 	path = yolov5
 	url = git@github.com:ultralytics/yolov5.git
+[submodule "bagedit"]
+	path = bagedit
+	url = git@github.com:SJamieson/bagedit.git
