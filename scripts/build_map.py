@@ -51,8 +51,9 @@ if __name__ == '__main__':
         y_range=(math.floor(min_xyz.y), math.ceil(max_xyz.y)),
         z_range=(math.floor(min_xyz.z), math.ceil(max_xyz.z)),
     )
+    biomap_fig.update_scenes(xaxis_visible=False, yaxis_visible=False,zaxis_visible=False )
 
     fish_counts = df[args.model_name].to_numpy()
-    plot_trajectory_3d(biomap_fig, plot_xyzs, color_val=fish_counts, c_range=(COLORMAP_MIN, COLORMAP_MAX))
+    plot_trajectory_3d(biomap_fig, plot_xyzs, color_val=fish_counts, c_range=(COLORMAP_MIN, COLORMAP_MAX), colorscale="inferno")
     biomap_fig.write_html(f"biomap_{args.model_name}.html", auto_open=args.view_trajectory)
 

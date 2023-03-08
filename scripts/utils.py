@@ -45,7 +45,8 @@ def plot_trajectory_3d(
     hovertext: Optional[List[str]] = None,
     name: Optional[str] = None,
     connect_points: bool = False,
-    c_range: Tuple[float, float] = None
+    c_range: Tuple[float, float] = None,
+    invisible_axes: bool = False,
 ) -> None:
     xs, ys, zs = points[0], points[1], points[2]
     if color_val is None:
