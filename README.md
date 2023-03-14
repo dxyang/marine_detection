@@ -1,15 +1,24 @@
 # marine_detection
 
+
+## bags of interest
+[2022-10-USVI Data Logs](https://docs.google.com/spreadsheets/d/1h3gqMo6qbuo2wdldPzKdIfek9tsK62DqrL3CMTWyFxk/edit#gid=616306361)
+* /vortexfs1/share/warplab/shared/datasets/2022-10-USVI/2022-11-03/CUREE3/bags/warpauv_3_xavier4_2022-11-03-10-12-06.bag
+* /vortexfs1/share/warplab/shared/datasets/2022-10-USVI/2022-11-03/CUREE3/bags/warpauv_3_xavier4_2022-11-03-10-59-34.bag
+
+whoi_rs_701515_vmad2 upload this model to tator
+
+
+
 ## useful commands
 
 ### convert bag to mp4
 ```bash
 python bagutils/bag2mp4.py \
-    --bag_file ~/localdata/warp/biomap/warpauv_2_xavier3_2022-11-02-09-55-23-metashape-odom.bag \
-    --framerate 15 \
-    --output_dir ~/localdata \
-    --image_topic /warpauv_2/cameras/forward/rgb/image_stream/h264
-
+    /data_nvme/dxy/biomap/warpauv_3_xavier4_2022-11-03-10-12-06/warpauv_3_xavier4_2022-11-03-10-12-06.bag \
+    15 \
+    /data_nvme/dxy/biomap/warpauv_3_xavier4_2022-11-03-10-12-06 \
+    /warpauv_3/cameras/forward/rgb/image_stream/h264
 ```
 
 ### ffmpeg (mp4 <=> image directory)

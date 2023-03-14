@@ -4,3 +4,6 @@
 [submodule "bagedit"]
 	path = bagedit
 	url = git@github.com:SJamieson/bagedit.git
+[submodule "tator_yolo_scripts"]
+	path = tator_yolo_scripts
+	url = git@github.com:arizonat/tator_yolo_scripts.git
