@@ -25,6 +25,9 @@ pandas = "^1.5.3"
 seaborn = "^0.12.2"
 pycryptodomex = "^3.17"
 rospkg = "^1.4.0"
+tator = "^0.10.29"
+jupyter = "^1.0.0"
+jupyterlab = "^3.6.1"
 
 
 [build-system]
