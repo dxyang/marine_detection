@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["dxy"]
 readme = "README.md"
-packages = [{include = "marine_detection"}]
 
 [tool.poetry.dependencies]
 python = "~3.9"
@@ -28,6 +27,9 @@ rospkg = "^1.4.0"
 tator = "^0.10.29"
 jupyter = "^1.0.0"
 jupyterlab = "^3.6.1"
+open3d = "^0.17.0"
+scikit-learn = "^1.2.2"
+addict = "^2.4.0"
 
 
 [build-system]
