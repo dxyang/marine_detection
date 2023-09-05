@@ -6,7 +6,7 @@ authors = ["dxy"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.9"
+python = "~3.10"
 gitpython = "^3.1.31"
 matplotlib = "^3.7.1"
 numpy = "^1.24.2"
@@ -30,6 +30,7 @@ jupyterlab = "^3.6.1"
 open3d = "^0.17.0"
 scikit-learn = "^1.2.2"
 addict = "^2.4.0"
+einops = "^0.6.1"
 
 
 [build-system]
