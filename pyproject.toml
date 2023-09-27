@@ -31,6 +31,10 @@ open3d = "^0.17.0"
 scikit-learn = "^1.2.2"
 addict = "^2.4.0"
 einops = "^0.6.1"
+imutils = "^0.5.4"
+av = "^10.0.0"
+typed-argument-parser = "^1.8.1"
+h5py = "^3.9.0"
 
 
 [build-system]
