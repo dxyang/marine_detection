@@ -1,8 +1,9 @@
 import os
 import glob
+import math
 import multiprocessing
 from pathlib import Path
-
+from typing import List
 import cv2
 import h5py
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ from torchvision.utils import flow_to_image
 
 from tqdm import tqdm
 
-def calculate_optical_flow(vid_fp: str, frame_freq: int, offset: int, output_dir: str, lock: multiprocessing.Lock=None, save_img_to_disk: bool = False, resize: bool = False, mp_pbar_update_freq: int = 30):
+def calculate_optical_flow(vid_fp: str, total_procs: int, proc_num: int, frames_to_process: List[int], output_dir: str, lock: multiprocessing.Lock=None, save_img_to_disk: bool = False, resize: bool = False, mp_pbar_update_freq: int = 30):
     vc = cv2.VideoCapture(vid_fp)
     num_frames = int(vc.get(cv2.CAP_PROP_FRAME_COUNT))
     img_output_dir = f"{output_dir}/imgs"
@@ -27,13 +28,13 @@ def calculate_optical_flow(vid_fp: str, frame_freq: int, offset: int, output_dir
     out_count = 0
     last_frame = None
 
-    if frame_freq == 1:
+    if total_procs == 1:
         f = h5py.File(f"{output_dir}/cv_flow.hdf", "w")
         pbar = tqdm(total=num_frames)
     else:
-        f = h5py.File(f"{output_dir}/cv_flow_{offset}_{frame_freq}.hdf", "a")
+        f = h5py.File(f"{output_dir}/cv_flow_{proc_num}_{total_procs}.hdf", "w")
         with lock:
-            pbar = tqdm(total=num_frames // frame_freq, desc=f"Position {offset}", position=offset, leave=False)
+            pbar = tqdm(total=len(frames_to_process), desc=f"[Proc {proc_num}]", position=proc_num, leave=False)
 
     # aggregate into single hdf file for faster i/o
     while True:
@@ -51,27 +52,26 @@ def calculate_optical_flow(vid_fp: str, frame_freq: int, offset: int, output_dir
             last_frame = gray_frame
 
         # multiproc - skip frames that this process is not responsible for
-        if (frame_count - offset) % frame_freq != 0:
+        if frame_count not in frames_to_process:
             last_frame = gray_frame
             frame_count += 1
-            if frame_freq == 1:
+            if total_procs == 1:
                 pbar.update()
             continue
-
-        frame_str = str(frame_count).zfill(6)
 
         # check if we've already processed this frame
-        if frame_str in f:
-            last_frame = gray_frame
-            frame_count += 1
-            out_count += 1
-            if frame_freq == 1:
-                pbar.update()
-            else:
-                if out_count % mp_pbar_update_freq == 0:
-                    with lock:
-                        pbar.update(mp_pbar_update_freq)
-            continue
+        # frame_str = str(frame_count).zfill(6)
+        # if frame_str in f:
+        #     last_frame = gray_frame
+        #     frame_count += 1
+        #     out_count += 1
+        #     if total_procs == 1:
+        #         pbar.update()
+        #     else:
+        #         if out_count % mp_pbar_update_freq == 0:
+        #             with lock:
+        #                 pbar.update(mp_pbar_update_freq)
+        #     continue
 
         grp = f.create_group(frame_str)
         grp.create_dataset("flow", shape=(2, height, width), dtype=np.float32)
@@ -96,12 +96,13 @@ def calculate_optical_flow(vid_fp: str, frame_freq: int, offset: int, output_dir
             torch_flow = torch.from_numpy(chw_flow)
             flow_img = flow_to_image(torch_flow)
             write_png(flow_img, f"{img_output_dir}/flow_{frame_str}.png")
+
         grp["flow"][:] = chw_flow
         out_count += 1
 
         last_frame = gray_frame
         frame_count += 1
-        if frame_freq == 1:
+        if total_procs == 1:
             pbar.update()
         else:
             if out_count % mp_pbar_update_freq == 0:
@@ -112,8 +113,8 @@ def calculate_optical_flow(vid_fp: str, frame_freq: int, offset: int, output_dir
     with lock:
         pbar.update(out_count % mp_pbar_update_freq)
 
-    if frame_freq != 1:
-        print(f"Process {offset}/{frame_freq} finished")
+    if total_procs != 1:
+        print(f"Process {proc_num}/{total_procs} finished")
 
 class ArgumentParser(Tap):
     video: str
@@ -157,13 +158,21 @@ if __name__ == '__main__':
     # print(end - start)
     # exit()
 
+    num_frames += 10
+
+    chunk_size = math.ceil(num_frames / float(args.num_proc))
+    all_frames = [i for i in range(num_frames)]
+    frame_chunks = []
+    for i in range(args.num_proc):
+        frame_chunks.append(all_frames[i * chunk_size: min((i + 1) * chunk_size, num_frames)])
+
     if args.num_proc == 1:
         # single proc
-        calculate_optical_flow(args.video, frame_freq=1, offset=0, output_dir=args.flow_output_dir)
+        calculate_optical_flow(args.video, total_procs=1, proc_num=0, frames_to_process=all_frames, output_dir=args.flow_output_dir)
     else:
         lock = multiprocessing.Manager().Lock()
         with multiprocessing.Pool(processes=args.num_proc) as pool:
-            mp_args = [(args.video, args.num_proc, i, args.flow_output_dir, lock) for i in range(args.num_proc)]
+            mp_args = [(args.video, args.num_proc, i, frame_chunks[i], args.flow_output_dir, lock) for i in range(args.num_proc)]
             pool.starmap(calculate_optical_flow, mp_args)
 
     print(f"-------Done with processing flow.")

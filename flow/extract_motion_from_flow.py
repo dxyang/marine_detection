@@ -43,11 +43,10 @@ if __name__ == '__main__':
     num_flow_frames = 0
     for f in fs:
         print(f"hello!")
-        import pdb; pdb.set_trace()
 
     for f in fs:
-        print(f"HI!")
-        num_flow_frames += len(f)
+        print(f)
+        num_flow_frames += len(f.keys())
 
     assert num_flow_frames == num_frames
 
