@@ -11,6 +11,7 @@ import matplotlib.patches as patches
 import numpy as np
 from PIL import Image
 from tap import Tap
+import time
 import torch
 from torchvision.io import write_png
 from torchvision.utils import flow_to_image
@@ -37,7 +38,6 @@ def calculate_optical_flow(vid_fp: str, total_procs: int, proc_num: int, frames_
 
     print(f"proc num: {proc_num}, num frames: {len(frames_to_process)}")
 
-    import time
     time.sleep(5)
 
     if total_procs == 1:
@@ -75,20 +75,6 @@ def calculate_optical_flow(vid_fp: str, total_procs: int, proc_num: int, frames_
                 frame_count += 1
                 continue
 
-        # check if we've already processed this frame
-        # frame_str = str(frame_count).zfill(6)
-        # if frame_str in f:
-        #     last_frame = gray_frame
-        #     frame_count += 1
-        #     out_count += 1
-        #     if total_procs == 1:
-        #         pbar.update()
-        #     else:
-        #         if out_count % mp_pbar_update_freq == 0:
-        #             with lock:
-        #                 pbar.update(mp_pbar_update_freq)
-        #     continue
-
         frame_str = str(frame_count).zfill(6)
         grp = f.create_group(frame_str)
         grp.create_dataset("flow", shape=(2, height, width), dtype=np.float32)
@@ -117,6 +103,7 @@ def calculate_optical_flow(vid_fp: str, total_procs: int, proc_num: int, frames_
 
         last_frame = gray_frame
         frame_count += 1
+
         if total_procs == 1:
             pbar.update()
         else:
@@ -137,7 +124,7 @@ class ArgumentParser(Tap):
 
     num_proc: int = 1
 
-def test(proc_num, lock):
+def mp_test(proc_num, lock):
     frames = 100000000
     update_rate = 100
     import time
@@ -155,35 +142,11 @@ if __name__ == '__main__':
     flow_output_dir = args.flow_output_dir
     if not os.path.exists(flow_output_dir):
         os.makedirs(flow_output_dir)
-    # if not os.path.exists(np_output_dir):
-    #     os.makedirs(np_output_dir)
 
     vc = cv2.VideoCapture(args.video)
     num_frames = int(vc.get(cv2.CAP_PROP_FRAME_COUNT))
     width  = int(vc.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(vc.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    # import time
-    # start = time.time()
-    # pbar = tqdm(total=num_frames)
-    # while True:
-    #     ret, frame = vc.read()
-    #     if frame is None:
-    #         break
-    #     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #     pbar.update()
-    # end = time.time()
-    # print(end - start)
-    # vc = cv2.VideoCapture(args.video)
-    # start = time.time()
-    # while True:
-    #     ret, frame = vc.read()
-    #     if frame is None:
-    #         break
-    #     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # end = time.time()
-    # print(end - start)
-    # exit()
 
     num_frames += 10
 
@@ -202,30 +165,6 @@ if __name__ == '__main__':
             mp_args = [(args.video, args.num_proc, i, frame_chunks[i], args.flow_output_dir, lock) for i in range(args.num_proc)]
             pool.starmap(calculate_optical_flow, mp_args)
             # mp_args = [(i, lock) for i in range(args.num_proc)]
-            # pool.starmap(test, mp_args)
+            # pool.starmap(mp_test, mp_args)
 
     print(f"-------Done with processing flow.")
-    # print(f"-------Aggregating into single hdf file.")
-
-    # aggregate into single hdf file for faster i/o
-    # np_output_dir = f"{flow_output_dir}/numpy"
-    # f = h5py.File(f"{flow_output_dir}/cv_flow.hdf", "w")
-
-    # for idx in tqdm(range(num_frames)):
-    #     frame_str = str(idx).zfill(6)
-    #     flow_np_path = f"{np_output_dir}/{frame_str}.npy"
-    #     # assert os.path.exists(flow_np_path)
-
-    #     flow = np.load(flow_np_path)
-    #     if flow.shape != (2, 720, 1280):
-    #         import pdb; pdb.set_trace()
-    #         print(f"unexpected shape: {frame_str}")
-    #         continue
-
-    #     grp = f.create_group(frame_str)
-    #     grp.create_dataset("flow", shape=(2, height, width), dtype=np.float32)
-    #     grp["flow"][:] = flow
-
-    #     if idx % 1_000 == 0:
-    #         f.flush()
-
