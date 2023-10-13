@@ -22,6 +22,7 @@ class ArgumentParser(Tap):
     duration: str = "00:00:30" # HH:MM:SS
     ext: str = ".MOV" # video extension type to look for
     flatten_output_dir: bool = False # if true, all outputs in non-nested root directory
+    skip_existing: bool = True # skip already generated videos
 
 def parse_time_csv(csv_path: str):
     df = pd.read_csv(args.input_file)
@@ -47,6 +48,9 @@ def clip_videos(input_dir: str,
         
         if not isdir(output_path.parent):
             os.makedirs(output_path.parent, exist_ok=True)
+
+        if os.path.exists(output_path):
+            continue
 
         start_time = row["start_time"]
         
