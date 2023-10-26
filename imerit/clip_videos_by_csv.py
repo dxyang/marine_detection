@@ -50,7 +50,7 @@ def clip_videos(input_dir: str,
 
         # include time info in the output name
         t = time.strptime(start_time, "%H:%M:%S")
-        out_name = out_name.stem + f"_{t.tm_min}m_{t.tm_sec}s" + out_name.suffix
+        out_name = join(out_name.parent, out_name.stem + f"_{t.tm_min}m_{t.tm_sec}s" + out_name.suffix)
         output_path = Path(join(output_dir, out_name))
         
         if not isdir(output_path.parent):
