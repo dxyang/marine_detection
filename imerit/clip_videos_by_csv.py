@@ -44,7 +44,14 @@ def clip_videos(input_dir: str,
 
     for ind, row in tqdm(files_and_times.iterrows()):
         input_path = Path(join(input_dir, row["filepath"]))
-        output_path = Path(join(output_dir, row["filepath"]))
+
+        start_time = row["start_time"]
+        out_name = Path(row["filepath"])
+
+        # include time info in the output name
+        t = time.strptime(start_time, "%H:%M:%S")
+        out_name = out_name.stem + f"_{t.tm_min}m_{t.tm_sec}s" + out_name.suffix
+        output_path = Path(join(output_dir, out_name))
         
         if not isdir(output_path.parent):
             os.makedirs(output_path.parent, exist_ok=True)
@@ -52,7 +59,7 @@ def clip_videos(input_dir: str,
         if os.path.exists(output_path):
             continue
 
-        start_time = row["start_time"]
+
         
         clip_video(input_path, output_path, start_time, duration)
 
