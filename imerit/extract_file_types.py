@@ -25,6 +25,8 @@ filepaths = glob.iglob(str(root_dir / f"**/*.{filetype}"), recursive=True)
 
 for filepath in filepaths:
     print(filepath)
-    output_path = Path(output_dir, *Path(filepath).parts[1:])
+    # Remove the root portion of path and replace with output_dir
+    root_path_portion = len(root_dir.parts)
+    output_path = Path(output_dir, *Path(filepath).parts[root_path_portion:])
     os.makedirs(str(output_path.parent), exist_ok=True)
     shutil.copyfile(filepath, output_path)
