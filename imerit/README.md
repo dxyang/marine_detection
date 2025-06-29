@@ -1,3 +1,26 @@
+Authors:
+Levi Cai
+Austin Greene
+Daniel Yang
+Nadege Aoki
+Sierra Jarriel
+Nathan Formel
+T. Aran Mooney
+Yogesh Girdhar
+
+
+Process:
+1. Biology team collected diver-based fish survey videos in the field (2016-2023)
+2. Austin Greene selected 30-sec clips from each site/year, biased towards having some fish in each (2023)
+3. These clips were uploaded to AWS, and contracted iMerit labeling service to provide track-based annotations at the fish level (NOT species) (2023)
+    -- For uploading, use the vids2awsmanifest_and_frames.ipynb
+    -- For downloading, use the imerit2coco.ipynb and imerit2imgs2vids.ipynb
+    -- For stats at fish-level, use the imerit2coco.ipynb
+4. These annotations and clips were then uploaded to LabelBox (2023)
+5. Biology team then annotated the fish labels at the species-level on LabelBox (2023)
+    -- For species-level stats, use labelbox2<tool>.ipynb
+
+
 ## Instructions for using AWS CLI
 
 - Install AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
